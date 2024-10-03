@@ -1,11 +1,13 @@
-
-# Load the trained Lasso regression model
 import pickle
 import pandas as pd
 import streamlit as st
 
+# Load the trained Lasso regression model
 filename = 'lasso_regression_model.sav'
-model = pickle.load(open(filename, 'rb'))
+try:
+    model = pickle.load(open(filename, 'rb'))
+except FileNotFoundError:
+    st.error("Model file not found. Please ensure the file is in the correct location.")
 
 st.title("Monthly Revenue Prediction")
 
@@ -24,7 +26,7 @@ social_media_engagement = st.number_input("Social Media Engagement", min_value=0
 customer_satisfaction = st.number_input("Customer Satisfaction", min_value=0.0)
 customer_retention_rate = st.number_input("Customer Retention Rate", min_value=0.0)
 
-# Create a button to make predictions
+# Button to make predictions
 if st.button("Predict"):
     # Create a DataFrame with user input
     input_data = pd.DataFrame({
@@ -41,10 +43,16 @@ if st.button("Predict"):
         'customer_satisfaction': [customer_satisfaction],
         'customer_retention_rate': [customer_retention_rate],
     })
+    
+    # Check if the input matches model expectations (optional but useful)
+    st.write("Input Data:")
+    st.write(input_data)
 
-    # Make prediction using the loaded model
-    prediction = model.predict(input_data)[0]
-
-    # Display the prediction
-    st.header("Prediction:")
-    st.write(f"The predicted monthly revenue is: {prediction:.2f}")
+    try:
+        # Make prediction using the loaded model
+        prediction = model.predict(input_data)[0]
+        # Display the prediction
+        st.header("Prediction:")
+        st.write(f"The predicted monthly revenue is: {prediction:.2f}")
+    except Exception as e:
+        st.error(f"An error occurred during prediction: {str(e)}")
